@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register</title>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css"
+        integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+</head>
+<body>
+<div class="container">
+    <h1 > Please Register Below</h1>
+    <div class="row">
+        <div class="col-12">
+            <button class="btn btn-secondary" id='view' > View List</button>
+            <button class="btn btn-secondary" id='reg' >Register</button>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-12 my-5">
+            <form id="form">
+                <div class="form-group">
+                    <label for="firstname">First Name</label>
+                    <input type="text" class="form-control col-6" id="fname" class='element' aria-describedby="emailHelp"
+                        placeholder="first name">
+                </div>
+                <input type="hidden" id='id' />
+                <div class="form-group">
+                    <label for="Lastname">Last Name</label>
+                    <input type="text" class="form-control col-6" id="lname" class='element'  aria-describedby="emailHelp"
+                        placeholder="Last name">
+                </div>
+                <div class="form-group">
+                    <label for="arrival">Arrival Time</label>
+                    <input type="time" class="form-control col-6" id="arrival" class='element'   aria-describedby="emailHelp"
+                        placeholder="arrival time">
+                </div>
+                <div class="form-group">
+                    <label for="exit">Exit Time</label>
+                    <input type="time" class="form-control col-6" id="exit" class='element'  placeholder="exit time">
+                </div>
+                <div class="form-group">
+                    <label for="date">Interview Date</label>
+                    <input type="date" class="form-control col-6" id="date" class='element'  placeholder="interview date">
+                </div>
+                <button type="submit" class="btn btn-secondary" class='submit' id='add'>Submit</button>
+            </form>
+        </div>
+        <div class="col-12">
+            <div class="row">
+                <div class="col-6" id='display' style='display:none'>
+               
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src='https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/js/bootstrap.min.js'></script>
+<script src="http://code.jquery.com/jquery-3.4.1.min.js" 
+integrity="sha256-CSXorXvZcTkaix6Yvo6HppcZGetbYMGWSFlBw8HfCJo="
+    crossorigin="anonymous"></script>
+<script>
+    $(document).ready(()=>{
+        
+        //here onclicking it brings out the users who have clicked
+        $('#view').click((e)=>{
+            e.preventDefault();
+            console.log("heloo")
+            $('#form').slideUp()
+            $('#display').css({display:'block'}).slideDown()
+            $.get('https://empl-dev.site/api/interview/fetchWork',(data)=>{
+                data.data.map((x)=>{
+                    $('#display').html(()=>`<div class='col-8 '>${x.firstname} ${x.lastname} 
+                        <button id='edit_user' class='btn btn-primary'>Edit</button> 
+                        <button id='delete_user' class='btn btn-danger'>Delete</button>
+                    </div>`)
+
+
+                    $('#edit_user').click((e)=>{
+                            e.preventDefault();
+                            console.log('editing')
+                            $('#id').attr('class',x.id)
+                            $('#fname').text(x.firstname)
+                            $('#lname').text(x.lastname)
+                            $('#date').text(x.date_of_interview)
+                            $('#arrival').text(x.arrival_time)
+                            $('#exit').text(x.exit_time)
+                            $('.submit').attr('id','edit')
+                            $('#display').slideUp()
+                            $('#form').slideDown()
+                    }) 
+
+                    $('#delete_user').click((e) => {
+                        e.preventDefault()
+                        $.post('https://empl-dev.site/api/interview/deleteWork', { id: x.id },
+                         (data) => {
+                             $(e.target.parentElement).hide()
+                            console.log(data)
+                            $('#display').click()
+                        })
+                    } )
+                })
+            })
+        })
+        
+        //here onclicking brings out the registration form
+        $('#reg').click(()=>{
+            console.log("heloo")
+            $('#display').slideUp()
+            $('#form').slideDown()
+        })
+
+        //add a user
+        $('#add').click((e)=>{
+            e.preventDefault();
+            $.post('https://empl-dev.site/api/interview/addWork',{
+            firstname : $('#fname').val(),
+            lastname : $('#lname').val(),
+            date_of_interview:$('#date').val(),
+            arrival_time:$('#arrival').val(),
+            exit_time:$('#exit').val()
+            },(data)=>{
+                console.log("successfully uploaded register",data)
+                $('.element').val("")
+            })
+        })
+
+        //edits the user
+        $('#edit').click((e)=>{
+            e.preventDefault();
+            console.log('editing....')
+            $.get('https://empl-dev.site/api/interview/editWork',{
+                arrival_time: $('#arrival').val(),
+                date_of_interview: $('#date').val(),
+                exit_time: $('#exit').val(),
+                firstname: $('#fname').val(),
+                id: $('#id').val(),
+                lastname:  $('#lname').val()
+            },(data) => {
+                $('.submit').attr('id', 'add')
+                $('.element').val("")
+            })
+            console.log("editing")
+            $('#form').slideUp()
+            $('#display').slideDown()
+        })
+    })
+</script>
+</body>
+</html>
